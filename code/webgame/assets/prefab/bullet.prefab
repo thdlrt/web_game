@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "New Sprite",
+    "_name": "bullet",
     "_objFlags": 0,
     "_parent": null,
     "_children": [],
@@ -42,8 +42,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 40,
-      "height": 36
+      "width": 60,
+      "height": 15
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -54,8 +54,8 @@
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        0,
-        0,
+        507.562,
+        173,
         0,
         0,
         0,
@@ -75,8 +75,8 @@
     "_skewX": 0,
     "_skewY": 0,
     "_is3DNode": false,
-    "_groupIndex": 1,
-    "groupIndex": 1,
+    "_groupIndex": 3,
+    "groupIndex": 3,
     "_id": ""
   },
   {
@@ -95,10 +95,10 @@
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
     "_spriteFrame": {
-      "__uuid__": "8cdb44ac-a3f6-449f-b354-7cd48cf84061"
+      "__uuid__": "907d22a6-a94f-4cd4-a4d3-a2c528ae074b"
     },
     "_type": 0,
-    "_sizeMode": 1,
+    "_sizeMode": 0,
     "_fillType": 0,
     "_fillCenter": {
       "__type__": "cc.Vec2",
@@ -112,21 +112,19 @@
     "_id": ""
   },
   {
-    "__type__": "70260jTlG5DvatWyr3x0Mo5",
+    "__type__": "70f345hz49I1ok4uncTrXwE",
     "_name": "",
     "_objFlags": 0,
     "node": {
       "__id__": 1
     },
     "_enabled": true,
-    "audio": null,
     "speed": 200,
-    "heart": 1,
-    "score": 1,
+    "attack": 1,
     "_id": ""
   },
   {
-    "__type__": "cc.CircleCollider",
+    "__type__": "cc.BoxCollider",
     "_name": "",
     "_objFlags": 0,
     "node": {
@@ -136,10 +134,14 @@
     "tag": 0,
     "_offset": {
       "__type__": "cc.Vec2",
-      "x": 0,
-      "y": 0
+      "x": -9.2,
+      "y": 0.1
     },
-    "_radius": 40,
+    "_size": {
+      "__type__": "cc.Size",
+      "width": 41.7,
+      "height": 23.6
+    },
     "_id": ""
   },
   {
@@ -148,9 +150,9 @@
       "__id__": 1
     },
     "asset": {
-      "__uuid__": "5f598158-4dcf-4e00-be88-23f673b51ff3"
+      "__id__": 0
     },
-    "fileId": "58jIGOCvdI86xrD70Xg6/d",
+    "fileId": "02PqoOPFpLILTjGrAUmEtq",
     "sync": false
   }
 ]

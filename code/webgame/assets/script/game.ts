@@ -15,7 +15,7 @@ export default class Game extends cc.Component {
 
     // 元素对象池
     factorPool : cc.NodePool = new cc.NodePool();
-
+    
     // Canvas节点
     canvas : cc.Node = null;
     static  inst : Game = null;
@@ -23,6 +23,12 @@ export default class Game extends cc.Component {
     gameState: number = 0;
     //游戏分数（零件收集数目）
     score: number = 0;
+    //第一阶段时间
+    @property
+    time_1 : number = 30;
+    //地球生命值
+    @property
+    heart : number = 5;
     onLoad () {
         //显示层级控制（背景0，元素1-9，ui10）
         cc.find('Canvas/ui').zIndex = 10;
@@ -43,21 +49,64 @@ export default class Game extends cc.Component {
         let score = cc.find("Canvas/ui/scoreboard");
         let label = score.children[0];
         label.getComponent(cc.Label).string = this.score + '';
+        //更新生命值
+        let heart = score.children[2];
+        heart.getComponent(cc.Label).string = this.heart + '';
+        if(this.heart == 0){
+            this.gameOver();
+        }
     }
     startGame_1 () {
         this.gameState = 1;
         cc.log("startGame_1");
         //音频会自动播放
-
+        //开启计时器
+        this.schedule(function(){
+            let timeboard = cc.find("Canvas/ui/timeboard");
+            let label = timeboard.children[0];
+            label.getComponent(cc.Label).string = this.time_1 + '';
+            this.time_1 -= 1;
+            if(this.time_1 == 0){
+                this.unschedule(this.time_1);
+                this.endGame_1();
+            }
+        }, 1,this.time_1);  
     }
-    
+    //游戏失败
+    gameOver(){
+        this.gameState = 0;
+        cc.log("gameOver");
+        //停止播放bgm
+        let bgm : cc.AudioSource = this.node.getComponent(cc.AudioSource);
+        bgm.stop();
+        //关闭碰撞检测
+        let manager = cc.director.getCollisionManager();
+        manager.enabled = false;
+        //添加死亡动画（待补充）
+        
+        //切换选择场景
+        cc.director.loadScene('gameover');
+    }
     endGame_1 () {
         this.gameState = 0;
         cc.log("endGame_1");
         //停止播放bgm
         let bgm : cc.AudioSource = this.node.getComponent(cc.AudioSource);
         bgm.stop();
-
+        //关闭碰撞检测
+        let manager = cc.director.getCollisionManager();
+        manager.enabled = false;
+        //播放结束动画并切换场景
+        this.endGame_1_movie();
+    }
+    //结束动画
+    endGame_1_movie()
+    {
+        let earth = cc.find("Canvas/earth");
+        let t=cc.tween(this.canvas).to(3,{opacity:0},{easing:'sineOut'}).call(function(){
+            cc.director.loadScene('secondscene_one');
+        }).start();
+        cc.tween(earth).to(2,{position:cc.v3(this.canvas.width/2+earth.width,earth.y)},{easing:'sineOut'}).start();
     }
     //元素生成系统
     onCreating(){
@@ -105,4 +154,5 @@ export default class Game extends cc.Component {
     destroyFactor( node : cc.Node){
         this.factorPool.put( node );
     }
+
 }

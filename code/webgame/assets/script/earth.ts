@@ -21,17 +21,15 @@ export default class NewClass extends cc.Component {
         //获取种类
         let type = other.node.getComponent(cc.CircleCollider).tag;
         switch (type) {
+            //收集装备
         case 0:
             this.game_script.score += 1;
             break;
-        case 1:
-            if(this.game_script.score > 0)
-                this.game_script.score -= 1;
-            break; 
+            //和敌机发生碰撞
         default:
-            break;   
+            this.game_script.heart -= 1;
+            break;    
         }
-        cc.log(this.game_script.score);
    }
    
 

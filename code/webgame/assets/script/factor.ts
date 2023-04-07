@@ -44,6 +44,6 @@ export default class factor extends cc.Component {
     //碰撞检测
     onCollisionEnter (other : cc.Collider, self : cc.Collider) {
         this.dismiss();
-        cc.audioEngine.play(this.audio, false, 1);
+        cc.audioEngine.play(this.audio, false, 0.2);
     }
 }
