@@ -120,9 +120,6 @@
     },
     "_enabled": true,
     "audio": null,
-    "speed": 200,
-    "heart": 1,
-    "score": 1,
     "_id": ""
   },
   {
@@ -139,7 +136,7 @@
       "x": 0,
       "y": 0
     },
-    "_radius": 40,
+    "_radius": 100,
     "_id": ""
   },
   {

@@ -1,0 +1,29 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "道具消失",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 1,
+  "sample": 10,
+  "speed": 1,
+  "wrapMode": 2,
+  "curveData": {
+    "props": {
+      "opacity": [
+        {
+          "frame": 0,
+          "value": 200
+        },
+        {
+          "frame": 0.5,
+          "value": 0
+        },
+        {
+          "frame": 1,
+          "value": 200
+        }
+      ]
+    }
+  },
+  "events": []
+}

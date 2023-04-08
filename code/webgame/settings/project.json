@@ -3,11 +3,17 @@
     "earth",
     "factor",
     "ui",
-    "bullet"
+    "bullet",
+    "item",
+    "f_bulle"
   ],
   "collision-matrix": [
     [
       false,
+      true,
+      null,
+      null,
+      true,
       true
     ],
     [
@@ -24,6 +30,21 @@
     [
       false,
       true,
+      false,
+      false
+    ],
+    [
+      true,
+      false,
+      false,
+      false,
+      false
+    ],
+    [
+      true,
+      false,
+      false,
+      false,
       false,
       false
     ]

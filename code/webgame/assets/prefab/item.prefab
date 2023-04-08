@@ -78,8 +78,8 @@
     "_skewX": 0,
     "_skewY": 0,
     "_is3DNode": false,
-    "_groupIndex": 1,
-    "groupIndex": 1,
+    "_groupIndex": 4,
+    "groupIndex": 4,
     "_id": ""
   },
   {
@@ -125,7 +125,6 @@
     "audio": {
       "__uuid__": "7762d8b6-a072-41fc-a9fa-ee449e8bde95"
     },
-    "speed": 120,
     "_id": ""
   },
   {
@@ -142,6 +141,9 @@
     "_clips": [
       {
         "__uuid__": "0275b872-06ba-4fdb-82bd-87ef6a158bdf"
+      },
+      {
+        "__uuid__": "4a8b6875-0360-4698-83f1-046ab7db3a0f"
       }
     ],
     "playOnLoad": true,
