@@ -22,7 +22,7 @@ export default class NewClass extends cc.Component {
         let type = other.node.getComponent(cc.CircleCollider).tag;
         switch (type) {
             //收集装备
-        case 0:
+        case 1:
             this.game_script.score += 1;
             break;
             //和敌机发生碰撞
