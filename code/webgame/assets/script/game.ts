@@ -42,13 +42,29 @@ export default class Game extends cc.Component {
     speed : number = 0.3;
     //地球等级
     level : number = 1;
+    //最大等级
+    maxlevel : number = 4;
     //菜单状态
     menustate : boolean = false;
+    //第二阶段目标分数
+    target:number = 30;
+    //升级到下一目标需要的零件数目
+    up:number = 1;
+    //下一目标
+    need:number = this.up;
     onLoad () {
+        //ui显示控制
+        let scoreboard = cc.find("Canvas/ui/progressboard");
+        scoreboard.active = false;
+        let warnning = cc.find("Canvas/warnning");
+        warnning.active = false;
+        let boss = cc.find("Canvas/boss");
+        boss.active = false;
         //显示层级控制（背景0，元素1-9，ui10）
         cc.find('Canvas/ui').zIndex = 10;
         cc.find('Canvas/background').zIndex = 0;
         cc.find('Canvas/earth').zIndex = 5;
+        cc.find('Canvas/warnning').zIndex = 9;  
 
         Game.inst = this;
         this.canvas = cc.find('Canvas');
@@ -65,7 +81,14 @@ export default class Game extends cc.Component {
         //更新收集数目
         let score = cc.find("Canvas/ui/scoreboard");
         let label = score.children[0];
-        label.getComponent(cc.Label).string = this.score + '';
+        if(this.score<4*this.up)
+        {
+            label.getComponent(cc.Label).string = this.score + ' / ' + this.need;
+        }
+        else
+        {
+            label.getComponent(cc.Label).string = "MAX";
+        }
         //更新生命值
         let heart = score.children[2];
         heart.getComponent(cc.Label).string = this.heart + '';
@@ -75,6 +98,98 @@ export default class Game extends cc.Component {
         //更新得分
         let mask = score.children[4];
         mask.getComponent(cc.Label).string = this.mask + '';
+        //跟新游戏进度/血量
+        let progress = cc.find("Canvas/ui/progressboard").children[0].getComponent(cc.ProgressBar);
+        if(this.gameState == 2){
+            progress.progress = this.mask/this.target;
+        }
+        else if(this.gameState == 3){
+            let boss = cc.find("Canvas/boss").getComponent("boss");
+            progress.progress = boss.heart/boss.heart_s;
+        }
+        //开始boss站
+        if(this.mask >= this.target&&this.gameState == 2){
+            this.gameState = 3;
+            this.start_boss();
+        }
+        //结束boss战
+        if(this.gameState == 4){
+            this.gameState =0;//帮助关闭射击系统等
+            this.end_boss();
+        }
+        //升级系统
+        //地球（0-5）：单行子弹->地球（5-10）：三行子弹->地球（10-20）：三行子弹加少量导弹->死星（20+）:三行贯穿激光(伤害加倍)加大量导弹
+        if(this.score==this.need&&this.level<this.maxlevel)
+        {
+            ++this.level;
+            //最后一级要求高一点
+            if(this.level==3)
+                this.need+=this.up;
+            this.need+=this.up;
+            //更换贴图
+            //动画>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            if(this.level==4)
+            {
+                this.attack*=2;
+                this.node.rotation=0;
+                let earth = cc.find("Canvas/earth");
+                let sprite = earth.getComponent(cc.Sprite);
+                cc.resources.load("picture/death", cc.SpriteFrame, (err, spriteFrame) => {
+                    if(err)cc.log(err);
+                    sprite.spriteFrame = <cc.SpriteFrame>spriteFrame;
+                });
+            }
+        }
+    }
+    start_boss(){
+        //停止生成元素
+        this.unschedule(this.onCreating);
+        //等待3s
+        this.scheduleOnce(()=> {
+            //播放警告动画
+            let warnning = cc.find("Canvas/warnning");
+            let anima = warnning.getComponent(cc.Animation);
+            warnning.active = true;
+            anima.play("警告");
+            //地球归位
+            let earth = cc.find("Canvas/earth");
+            cc.tween(earth).to(5,{position:cc.v3(-this.canvas.width/2+earth.width,0)},{easing:'sineOut'}).start();
+            //bgm切换
+            let bgm : cc.AudioSource = this.node.getComponent(cc.AudioSource);
+        bgm.stop();
+        cc.resources.load("music/阿鲲 - 失重打斗", cc.AudioClip, (err, audioClip) => {
+            if(err)cc.log(err);
+            this.node.getComponent(cc.AudioSource).clip = <cc.AudioClip>audioClip;
+            this.node.getComponent(cc.AudioSource).volume = 0.3;
+            this.node.getComponent(cc.AudioSource).play();
+            //循环播放
+            this.node.getComponent(cc.AudioSource).loop = true;
+        });
+            this.scheduleOnce(()=> {
+                //关闭警告动画
+                anima.stop("警告");
+                warnning.active = false;
+                //boss入场
+                let boss = cc.find("Canvas/boss");
+                boss.active = true;
+                cc.tween(boss).to(3,{position:cc.v3(300,0,0)},{easing:'sineOut'}).start();
+                //血条动画
+                let p = cc.find("Canvas/ui/progressboard");
+                let process = p.children[0].children[0];
+                process.color = cc.Color.GREEN;
+                let bar = p.children[0].getComponent(cc.ProgressBar);
+                bar.progress = 0;
+                cc.tween(bar).to(1.5,{progress:1},{easing:'sineOut'}).start();
+            }, 6);
+        }, 5);
+    }
+    end_boss(){
+        //游戏结束
+        cc.log("end_boss");
+        //结束动画
+        let earth = cc.find("Canvas/earth");
+        cc.tween(this.canvas).to(5,{opacity:0},{easing:'sineOut'}).start();
+        cc.tween(earth).to(4,{position:cc.v3(this.canvas.width/2+earth.width,earth.y)},{easing:'sineOut'}).start();
     }
     startGame_1 () {
         this.gameState = 1;
@@ -118,6 +233,8 @@ export default class Game extends cc.Component {
             this.node.getComponent(cc.AudioSource).clip = <cc.AudioClip>audioClip;
             this.node.getComponent(cc.AudioSource).volume = 0.3;
             this.node.getComponent(cc.AudioSource).play();
+            //循环播放
+            this.node.getComponent(cc.AudioSource).loop = true;
         });
         //关闭碰撞检测
         let manager = cc.director.getCollisionManager();
@@ -149,7 +266,7 @@ export default class Game extends cc.Component {
             //1/4生成零件
             let num =4;
             if(this.gameState == 2)
-                num = 6;
+                num = 5;//总可能数目
             let type = Math.floor(Math.random()*num);
             //type根据概率不同映射到1-9上表示不同的单位
             switch(type)
@@ -166,7 +283,7 @@ export default class Game extends cc.Component {
                     script.heart=20;
                     script.score = 2;
                     break;
-                case 4:case 5:
+                case 4:
                     type = 3;
                     script.speed = 150;
                     script.attack = 1;
@@ -291,6 +408,12 @@ export default class Game extends cc.Component {
     }
     //第二阶段游戏
     startGame_2_movie(){
+        //去掉计时器，改为分数进度条
+        let timeboard = cc.find("Canvas/ui/timeboard");
+        timeboard.active = false;
+        let scoreboard = cc.find("Canvas/ui/progressboard");
+        scoreboard.active = true;
+        //动画
         let earth = cc.find("Canvas/earth");
         cc.tween(this.canvas).to(2,{opacity:255},{easing:'sineOut'}).start();
         earth.x = -this.canvas.width/2-earth.width;

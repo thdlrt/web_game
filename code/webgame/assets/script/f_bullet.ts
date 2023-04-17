@@ -18,17 +18,17 @@ export default class NewClass extends cc.Component {
 
 
     onEnable(){
-        //射击音效
-        cc.resources.load("music/f_bullet_"+this.type, cc.AudioClip, (err, audioClip) => {
-            //if(err)cc.log(err);
-            this.audio = <cc.AudioClip>audioClip;
-        });
+        // //射击音效
+        // cc.resources.load("music/f_bullet_"+this.type, cc.AudioClip, (err, audioClip) => {
+        //     if(err)cc.log(err);
+        //     this.audio = <cc.AudioClip>audioClip;
+        // });
         //加载贴图
         cc.resources.load("picture/f_bullet_"+this.type, cc.SpriteFrame, (err, spriteFrame) => {
             if(err)cc.log(err);
             this.getComponent(cc.Sprite).spriteFrame = <cc.SpriteFrame>spriteFrame;
         });
-        cc.audioEngine.play(this.audio, false, 0.1);
+        //cc.audioEngine.play(this.audio, false, 0.1);
         this.node.zIndex = 1;
         this.canvas = cc.find('Canvas');
     }

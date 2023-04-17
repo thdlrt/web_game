@@ -28,9 +28,12 @@ export default class NewClass extends cc.Component {
 
     onEnable () {
         //属性初始化
+        this.getComponent(cc.CircleCollider).radius=18;
         this.node.angle = 0;
         this.dir=cc.v2(1,0);
-        if(this.type==1)
+        this.node.width = 60;
+        this.node.height = 15;
+        if(this.type==1||this.type==4)
             this.speed=400;
         //射击音效
         cc.resources.load("music/bullet_"+this.type, cc.AudioClip, (err, audioClip) => {
@@ -42,9 +45,27 @@ export default class NewClass extends cc.Component {
             if(err)cc.log(err);
             this.getComponent(cc.Sprite).spriteFrame = <cc.SpriteFrame>spriteFrame;
         });
-        cc.audioEngine.play(this.audio, false, 0.1);
+        //太吵了，也许只有特殊子弹配音效比较好
+        //cc.audioEngine.play(this.audio, false, 0.1);
         this.node.zIndex = 1;
         this.canvas = cc.find('Canvas');
+        //球形闪电，飞到指定位置使得敌人瘫痪
+        if(this.type==3)
+        {
+            this.node.width = 100;
+            this.node.height = 100
+            this.node.getComponent(cc.CircleCollider).radius=0;
+            //移动到指定位置
+            cc.tween(this.node).to(0.5,{position:cc.v3(this.canvas.width/2-2*this.node.width,0)},{easing:'sineOut'}).
+            call(()=>{
+                //瘫痪敌人
+                //作用半径
+                let r:number = 400;
+                cc.tween(this.node).to(0.5,{width:r,height:r},{easing:'sineOut'}).call(this.dismiss).start();
+                cc.tween(this.node.getComponent(cc.CircleCollider)).to(0.4,{radius:r},{easing:'sineOut'}).start();
+                cc.tween(this.node).to(0.4,{opacity:0},{easing:'sineOut'}).start();
+            }).start();
+        }
     }
 
     start () {
@@ -52,7 +73,7 @@ export default class NewClass extends cc.Component {
     }
 
     update (dt) {
-        if(this.type==1)
+        if(this.type==1||this.type==4)
         {
             this.node.x += this.speed*dt;           
             if(this.node.x > this.canvas.width/2){
@@ -62,16 +83,11 @@ export default class NewClass extends cc.Component {
         //跟踪导弹
         else if(this.type==2)
         {   
-            if(this.target!=null)
+            if(this.target!=null&&cc.isValid(this.target))
             {
                 this.dir.x=this.target.x-this.node.x;
                 this.dir.y=this.target.y-this.node.y;
                 this.dir.normalizeSelf();
-            }
-            else
-            {
-                this.dir.x=1;
-                this.dir.y=0;
             }
             this.node.rotation=cc.misc.radiansToDegrees(Math.atan2(this.dir.x, this.dir.y))-90;
             this.node.x += this.dir.x*800*dt;
@@ -87,6 +103,14 @@ export default class NewClass extends cc.Component {
     }
     onCollisionEnter (other : cc.Collider, self : cc.Collider) {
         if(other.node.getComponent(cc.CircleCollider).tag != 1)
-            this.dismiss();
+        {
+            if(this.type==3||this.type==4)
+            {
+                //不需要消失，让factor知道就行
+                return;
+            }
+            else
+                this.dismiss();
+        }
     }
 }

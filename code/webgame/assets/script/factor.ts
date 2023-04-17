@@ -20,6 +20,8 @@ export default class factor extends cc.Component {
     score : number = 1;
     //种类使用Tag属性
     attack:number = 1;
+    //特殊状态
+    state:number = 0;//0正常，1定住
     private canvas : cc.Node = null;
     onLoad () {}
     start () {}
@@ -39,7 +41,7 @@ export default class factor extends cc.Component {
         }
     }
     update (dt) {
-        cc.log(this.node.x)
+        if(this.state==1)return;
         let step = this.speed *dt;
         this.node.x -= step;
         if(this.node.x < - this.canvas.width/2 - 100 )
@@ -51,7 +53,7 @@ export default class factor extends cc.Component {
         //不是超出边界就消失，则播放音效
         //关闭所有计时器
         this.unscheduleAllCallbacks();
-        if(Game.inst.gameState == 2 &&this.node.x > - this.canvas.width/2)
+        if(Game.inst.gameState > 1 &&this.node.x > - this.canvas.width/2)
         {
             //获得分数
             cc.find("gamecontrol").getComponent("game").mask+=this.score;
@@ -70,36 +72,44 @@ export default class factor extends cc.Component {
         }
         else if(other.tag>=10&&other.tag<20&&self.tag!=1)//和子弹碰撞
         {
+            //球形闪电
+            if(other.tag==13)
+            {
+                //定住5s,不移动、不射击
+                //瘫痪动画>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                this.state = 1;
+                this.scheduleOnce(()=> {
+                    this.state=0;
+                },5);
+                return;
+            }
             this.heart-=other.node.getComponent("bullet").attack;
             if(this.heart<=0)
             {
                 cc.audioEngine.play(this.audio, false, 0.4);
                 this.dismiss();
-                //分数增加 
-                //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             }
         }
     }
     createitem()
     {
-        //三种道具（回血13、导弹24、炸弹0），升级用的moss仍然随机出现，只是更少
+        //三种道具（回血0、导弹1、炸弹2），升级用的moss仍然随机出现，只是更少
         //1/3生成一个单位（暂时100）
         //》》》》》》》》》》》》》》》》》
         let generate = Math.floor(Math.random()*3);
-        cc.log(generate);
         if(generate != 0)return;
         //基本信息初始化
         let generatenode = Game.inst.createItem();
         generatenode.parent = cc.find("Canvas/items");
-        let type = Math.floor(Math.random()*5);
+        let type = Math.floor(Math.random()*3);
         generatenode.zIndex = 4;
         let col = generatenode.getComponent(cc.CircleCollider);
 
-        if(type%2==1)
+        if(type==0)
             type=1;
-        else if(type%2==0&&type!=0)
+        else if(type==1)
             type=2;
-        else
+        else if(type==2)
             type=3;
         //元素种类配置
         col.tag = type+20;
@@ -111,6 +121,7 @@ export default class factor extends cc.Component {
     }
     onshoot()
     {
+        if(this.state==1)return;
         let bullet = Game.inst.createf_Bullet();
         bullet.getComponent("f_bullet").attack = this.attack;
         bullet.getComponent("f_bullet").type=1;
