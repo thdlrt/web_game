@@ -47,7 +47,7 @@ export default class Game extends cc.Component {
     //菜单状态
     menustate : boolean = false;
     //第二阶段目标分数
-    target:number = 30;
+    target:number = 10;
     //升级到下一目标需要的零件数目
     up:number = 1;
     //下一目标

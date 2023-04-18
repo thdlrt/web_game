@@ -42,7 +42,6 @@ export default class NewClass extends cc.Component {
     onEnable(){
         //初始化
         //随机方向
-        cc.log("aaa")
         this.dir = cc.v2(Math.random()*2-1,Math.random()*2-1);
         this.dir.normalizeSelf();
         this.canvas = cc.find('Canvas');

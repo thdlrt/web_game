@@ -15,9 +15,12 @@ export default class NewClass extends cc.Component {
     type:number = 1;
     audio:cc.AudioClip = null;
     canvas : cc.Node = null;
-
+    //方向向量
+    dir : cc.Vec2;
 
     onEnable(){
+        //初始化
+        //this.dir = cc.v2(-1,0);//默认方向
         // //射击音效
         // cc.resources.load("music/f_bullet_"+this.type, cc.AudioClip, (err, audioClip) => {
         //     if(err)cc.log(err);
@@ -35,8 +38,10 @@ export default class NewClass extends cc.Component {
     update (dt) {
         if(this.type==1)
         {
-            this.node.x -= this.speed*dt;           
-            if(this.node.x < -this.canvas.width/2){
+            //按照方向移动
+            this.node.x += this.dir.x * this.speed * dt;
+            this.node.y += this.dir.y * this.speed * dt;          
+            if(this.node.x < -this.canvas.width/2||this.node.x > this.canvas.width/2||this.node.y < -this.canvas.height/2||this.node.y > this.canvas.height/2){
                 this.dismiss();
             }
         }

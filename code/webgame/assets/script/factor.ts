@@ -127,6 +127,7 @@ export default class factor extends cc.Component {
         bullet.getComponent("f_bullet").type=1;
         bullet.getComponent("f_bullet").speed=500;
         bullet.setPosition(this.node.x-60,this.node.y);
+        bullet.getComponent("f_bullet").dir=cc.v2(-1,0);
         bullet.getComponent(cc.CircleCollider).tag=31;
         let bullets=cc.find("Canvas/bullets");
         bullets.addChild(bullet);
