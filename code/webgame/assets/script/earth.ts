@@ -9,6 +9,8 @@ const {ccclass, property} = cc._decorator;
 
 @ccclass
 export default class NewClass extends cc.Component {
+    //在players中的编号
+    id:number;
     //获取游戏主控
     game:cc.Node = null;
     game_script:cc.Component = null;
@@ -19,7 +21,7 @@ export default class NewClass extends cc.Component {
         this.game = cc.find("gamecontrol");
         this.game_script= this.game.getComponent("game");
         //发射子弹
-        this.schedule(this.onshoot, this.game_script.speed, cc.macro.REPEAT_FOREVER, 0.01);
+        this.schedule(this.onshoot, this.game_script.players[this.id].speed, cc.macro.REPEAT_FOREVER, 0.01);
     }
     
     onCollisionEnter (other : cc.Collider, self : cc.Collider) {
@@ -28,11 +30,11 @@ export default class NewClass extends cc.Component {
         switch (type) {
             //收集装备
         case 1:
-            this.game_script.score += 1;
+            this.game_script.players[this.id].score += 1;
             break;
             //和敌机发生碰撞
         case 2:case 3:
-            this.game_script.heart -= 1;
+            this.game_script.players[this.id].heart -= 1;
             //闪烁动画
             this.getComponent(cc.Animation).play('道具消失');
             this.scheduleOnce(()=> {
@@ -42,12 +44,12 @@ export default class NewClass extends cc.Component {
             break;    
         case 9:
             //和boss碰撞，立刻死亡
-            this.game_script.heart = 0;
+            this.game_script.players[this.id].heart = 0;
             break;
         //道具收集
         case 21:
             //回血
-            this.game_script.heart += 2;
+            this.game_script.players[this.id].heart += 2;
             break;
         case 22:
             //发射3个跟踪导弹
@@ -67,7 +69,7 @@ export default class NewClass extends cc.Component {
             break;
         //受到攻击
         case 31:
-            this.game_script.heart -= other.node.getComponent("f_bullet").attack;
+            this.game_script.players[this.id].heart -= other.node.getComponent("f_bullet").attack;
             break;
         default:
             cc.log("为未知碰撞")
@@ -77,7 +79,8 @@ export default class NewClass extends cc.Component {
    onshoot(){
         if(this.game_script.gameState > 1)
         {
-            switch(this.game_script.level)
+
+            switch(this.game_script.players[this.id].level)
             {
                 case 1:
                     this.shootnormal(1);
@@ -117,7 +120,7 @@ export default class NewClass extends cc.Component {
         for(let i = 0;i<num;i++)
         {
             let bullet = Game.inst.createBullet();
-            bullet.getComponent("bullet").attack = this.game_script.attack;
+            bullet.getComponent("bullet").attack = this.game_script.players[this.id].attack;
             bullet.setPosition(this.node.x+this.node.width/2,this.node.y-this.node.height/2+places[i]);
             //不同子弹设置
             bullet.getComponent("bullet").type=state+1;

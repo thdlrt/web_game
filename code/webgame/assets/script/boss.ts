@@ -91,7 +91,7 @@ export default class NewClass extends cc.Component {
             return;
         }
         //有1%的几率掉落道具
-        if(Math.random()<0.01)
+        if(window["random"].seededRandom()<0.01)
         {
             this.lostitem(1);
         }
@@ -199,7 +199,7 @@ export default class NewClass extends cc.Component {
         {
             let generatenode = Game.inst.createItem();
             generatenode.parent = cc.find("Canvas/items");
-            let type = Math.floor(Math.random()*3);
+            let type = Math.floor(window["random"].seededRandom()*3);
             generatenode.zIndex = 4;
             let col = generatenode.getComponent(cc.CircleCollider);
 

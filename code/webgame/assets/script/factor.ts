@@ -96,12 +96,12 @@ export default class factor extends cc.Component {
         //三种道具（回血0、导弹1、炸弹2），升级用的moss仍然随机出现，只是更少
         //1/3生成一个单位（暂时100）
         //》》》》》》》》》》》》》》》》》
-        let generate = Math.floor(Math.random()*3);
+        let generate = Math.floor(window["random"].seededRandom()*3);
         if(generate != 0)return;
         //基本信息初始化
         let generatenode = Game.inst.createItem();
         generatenode.parent = cc.find("Canvas/items");
-        let type = Math.floor(Math.random()*3);
+        let type = Math.floor(window["random"].seededRandom()*3);
         generatenode.zIndex = 4;
         let col = generatenode.getComponent(cc.CircleCollider);
 

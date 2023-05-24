@@ -25,10 +25,12 @@ export default class NewClass extends cc.Component {
     target:cc.Node = null;
     //方向
     dir:cc.Vec2 = cc.v2(1,0);
-
+    //产生时间
+    startTime:number = 0;
     onEnable () {
         //属性初始化
         this.getComponent(cc.CircleCollider).radius=18;
+        this.startTime = performance.now();
         this.node.angle = 0;
         this.dir=cc.v2(1,0);
         this.node.width = 60;
@@ -92,7 +94,7 @@ export default class NewClass extends cc.Component {
             this.node.rotation=cc.misc.radiansToDegrees(Math.atan2(this.dir.x, this.dir.y))-90;
             this.node.x += this.dir.x*800*dt;
             this.node.y += this.dir.y*800*dt;
-            if(this.node.x > this.canvas.width/2||this.node.x < -this.canvas.width/2||this.node.y > this.canvas.height/2||this.node.y < -this.canvas.height/2){
+            if(performance.now()-this.startTime>3000||this.node.x > this.canvas.width/2||this.node.x < -this.canvas.width/2||this.node.y > this.canvas.height/2||this.node.y < -this.canvas.height/2){
                 this.dismiss();
             }
         }

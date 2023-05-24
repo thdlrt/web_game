@@ -10,23 +10,21 @@ const {ccclass, property} = cc._decorator;
 @ccclass
 export default class NewClass extends cc.Component {
 
-    // LIFE-CYCLE CALLBACKS:
-    game:cc.Node = null;
-    script = null;
-    onLoad () {
-        cc.log("begin");
-        this.node.zIndex = 100;
-        this.game = cc.find("gamecontrol");
-        this.script = this.game.getComponent("game");
+    onLoad() {
+        //显示在最前面
+        this.node.zIndex = 1000;
+    }
+
+    onEnable () {
         this.node.on(cc.Node.EventType.TOUCH_START,this.ontouch,this);
+        cc.director.pause();
     }
 
-    start () {
-
+    onDisable() {
+        this.node.off(cc.Node.EventType.TOUCH_START,this.ontouch,this);
+        cc.director.resume();
     }
-
-    ontouch(){
-        this.node.active = false;
-        this.script.startGame_1 ();
+    ontouch(event){
+        event.stopPropagation();
     }
 }
