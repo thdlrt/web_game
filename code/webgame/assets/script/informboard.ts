@@ -17,12 +17,10 @@ export default class NewClass extends cc.Component {
 
     onEnable () {
         this.node.on(cc.Node.EventType.TOUCH_START,this.ontouch,this);
-        cc.director.pause();
     }
 
     onDisable() {
         this.node.off(cc.Node.EventType.TOUCH_START,this.ontouch,this);
-        cc.director.resume();
     }
     ontouch(event){
         event.stopPropagation();

@@ -18,14 +18,14 @@ class Random {
     constructor(seed: number) {
         this.seed = seed;
     }
-    seededRandom = function() {
+    seededRandom = function () {
         let max = 1;
         let min = 0;
         this.seed = (this.seed * 9301 + 49297) % 233280;
         var rnd = this.seed / 233280.0;
         return min + rnd * (max - min);
     }
-}    
+}
 const { ccclass, property } = cc._decorator;
 @ccclass
 export default class net extends cc.Component {
@@ -34,13 +34,15 @@ export default class net extends cc.Component {
     server_ip: string = '106.54.61.151';
     roomId: string = "";
     playerId: string = "";
+    //游戏状态
+    pause: boolean = false;
     //帧速率
     fps: number = 60;
-    //待处理的消息
-    messageList: Message[] = [];
-    seed:number;
+    seed: number;
     //事件板
     informboard: cc.Node = null;
+    //游戏开始
+    game_start: boolean = false;
     //websocket定义
     websocket = {
         _sock: {},  //当前的webSocket的对象
@@ -99,8 +101,10 @@ export default class net extends cc.Component {
 
     //信息的处理
     onmessage(res) {
-        //消息直接加入到序列
-        this.messageList[this.messageList.length] = res;
+        //如果开始则更新游戏帧
+        if (this.game_start) {
+            this.gameupdate(res);
+        }
         let ops = res.ops;
         //检查是否存在特殊的消息
         for (let i = 0; i < ops.length; i++) {
@@ -109,7 +113,8 @@ export default class net extends cc.Component {
                 switch (ops[i].code) {
                     case "START":
                         //游戏开始
-                        this.gamestart();
+                        this.game_start = true;
+                        window["onfire"].fire("onstart");
                         break;
                     case "DISCONNECT":
                         //玩家断开连接
@@ -146,33 +151,20 @@ export default class net extends cc.Component {
         const params = new URLSearchParams(url.search);
         return params.get('mode');
     }
-    //接收到strat开始游戏
-    gamestart() {
-        //开始游戏
-        window["onfire"].fire("onstart");
-        //本地定时更新
-        setInterval(() => {
-            // 取出现有的待更新帧
-            let messageList = this.messageList;
-            this.messageList = [];
-        
-            // 处理接受消息队列进行远端消息的更新
-            for (let i = 0; i < messageList.length; i++) {
-                let message = messageList[i];
-                // 处理消息
-                let ops = message.ops;
-                for (let j = 0; j < ops.length; j++) {
-                    let event = ops[j];
-                    if (event.special) continue;
-                    // 事件分发
-                    event.code = JSON.parse(event.code);
-                    window["onfire"].fire(event.code.name, event);
-                }
-            }
-        
-            // 执行游戏引擎的下一帧更新
-            cc.game.step();
-        }, 1/this.fps*1000);
+    //处理帧
+    gameupdate(message) {
+        // 处理消息
+        let ops = message.ops;
+        for (let j = 0; j < ops.length; j++) {
+            let event = ops[j];
+            if (event.special) continue;
+            // 事件分发
+            event.code = JSON.parse(event.code);
+            window["onfire"].fire(event.code.name, event);
+        }
+        // 执行游戏引擎的下一帧更新
+        if(!this.pause)
+            window["onfire"].fire("onupdate",1/this.fps);
     }
 
     //向服务器发送消息（以事件为单位）
@@ -189,11 +181,12 @@ export default class net extends cc.Component {
     uploadGameRecord(score: number, tiemCost: number, complete: boolean) {
         let xhr = new XMLHttpRequest();
         let url = `/gameapi:10000/uploadGameRecord`;
-        let params = { 
+        let params = {
             playerId: this.playerId,
             score: score,
             timeCost: tiemCost,
-            complete: complete, }; // 参数对象
+            complete: complete,
+        }; // 参数对象
         xhr.open('POST', url, true);
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -228,17 +221,22 @@ export default class net extends cc.Component {
         this.roomId = this.getroomid();
         this.playerId = this.getplayerid();
         window["mode"] = parseInt(this.getmode());
-        this.seed = parseInt(this.generateSeed(),10);
+        this.seed = parseInt(this.generateSeed(), 10);
+        window["onfire"].on("pause", () => {this.pause = !this.pause;});
         //多人模式服服务器连接
-        if(window["mode"]!=0)
-        {
-        //启动服务器监听，绑定
+        if (window["mode"] != 0) {
+            //启动服务器监听，绑定
             this.websocket.host = `ws://${this.server_ip}:10000/websocket/${this.roomId}/${this.playerId}`;
             this.websocket.connect();
             window["onfire"].on("onclose", this.onclose.bind(this));
             window["onfire"].on("onmessage", this.onmessage.bind(this));
             //同步随机种子(房间号)
             this.seed = parseInt(this.roomId);
+        }
+        else{//帧速率控制器 (定时器每秒60帧)
+            this.schedule(function () {
+                window["onfire"].fire("onupdate",1/this.fps);
+            }, 1 / this.fps);
         }
         window["random"] = new Random(this.seed);
         //标识id

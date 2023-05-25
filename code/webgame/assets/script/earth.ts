@@ -18,6 +18,7 @@ export default class NewClass extends cc.Component {
     dis:number=0;
     start () {}
     onLoad(){
+        //window["onfire"].on("onupdate", this.onupdate.bind(this));
         this.game = cc.find("gamecontrol");
         this.game_script= this.game.getComponent("game");
         //发射子弹
@@ -79,7 +80,6 @@ export default class NewClass extends cc.Component {
    onshoot(){
         if(this.game_script.gameState > 1)
         {
-
             switch(this.game_script.players[this.id].level)
             {
                 case 1:

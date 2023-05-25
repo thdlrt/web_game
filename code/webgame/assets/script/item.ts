@@ -25,9 +25,11 @@ export default class NewClass extends cc.Component {
     //计时器
     schedule1:cc.Scheduler = null;
     schedule2:cc.Scheduler = null;
+    //是否绑定
+    isBind:boolean = false;
     onLoad () {}
     start () {}
-    update (dt) {
+    onupdate (dt) {
         //随机移动,碰到画面边缘时反弹
         this.node.x += this.dir.x*this.speed*dt;
         this.node.y += this.dir.y*this.speed*dt;
@@ -40,6 +42,10 @@ export default class NewClass extends cc.Component {
 
     }
     onEnable(){
+        if(!this.isBind){
+            window["onfire"].on("onupdate", this.onupdate.bind(this));
+            this.isBind = true;
+        }
         //初始化
         //随机方向
         this.dir = cc.v2(window["random"].seededRandom()*2-1,window["random"].seededRandom()*2-1);

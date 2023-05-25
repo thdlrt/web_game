@@ -22,11 +22,17 @@ export default class factor extends cc.Component {
     attack:number = 1;
     //特殊状态
     state:number = 0;//0正常，1定住
+    //是否绑定事件
+    isBind:boolean = false;
     private canvas : cc.Node = null;
     onLoad () {}
     start () {}
     //初始化
     onEnable(){
+        if(!this.isBind){
+            window["onfire"].on("onupdate", this.onupdate.bind(this));
+            this.isBind = true;
+        }
         this.canvas = cc.find('Canvas');
         //对基础单位提速
         if(Game.inst.gameState == 2&&this.speed==200)
@@ -40,7 +46,7 @@ export default class factor extends cc.Component {
             this.schedule(this.onshoot, 1.5, cc.macro.REPEAT_FOREVER, 0.01);
         }
     }
-    update (dt) {
+    onupdate (dt) {
         if(this.state==1)return;
         let step = this.speed *dt;
         this.node.x -= step;

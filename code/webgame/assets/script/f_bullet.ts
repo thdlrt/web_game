@@ -17,7 +17,7 @@ export default class NewClass extends cc.Component {
     canvas : cc.Node = null;
     //方向向量
     dir : cc.Vec2;
-
+    isBind:boolean = false;
     onEnable(){
         //初始化
         //this.dir = cc.v2(-1,0);//默认方向
@@ -26,7 +26,10 @@ export default class NewClass extends cc.Component {
         //     if(err)cc.log(err);
         //     this.audio = <cc.AudioClip>audioClip;
         // });
-        //加载贴图
+        if(!this.isBind){
+            window["onfire"].on("onupdate", this.onupdate.bind(this));
+            this.isBind = true;
+        }
         cc.resources.load("picture/f_bullet_"+this.type, cc.SpriteFrame, (err, spriteFrame) => {
             if(err)cc.log(err);
             this.getComponent(cc.Sprite).spriteFrame = <cc.SpriteFrame>spriteFrame;
@@ -35,7 +38,7 @@ export default class NewClass extends cc.Component {
         this.node.zIndex = 1;
         this.canvas = cc.find('Canvas');
     }
-    update (dt) {
+    onupdate (dt) {
         if(this.type==1)
         {
             //按照方向移动

@@ -21,13 +21,14 @@ export default class NewClass extends cc.Component {
     onLoad () {
         this.bg1 = cc.find("bg1", this.node);
         this.bg2 = cc.find("bg2", this.node);
+        window["onfire"].on("onupdate", this.onupdate.bind(this));
     }
 
     start () {
 
     }
 
-    update (dt) {
+    onupdate (dt) {
         if(Game.inst.gameState == 0)return;
         let w:number = Game.inst.canvas.width;
         this.bg1.x -= this.speed*dt;

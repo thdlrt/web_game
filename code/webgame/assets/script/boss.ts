@@ -45,9 +45,10 @@ export default class NewClass extends cc.Component {
         }
         //开启攻击
         this.startattack();
+        window["onfire"].on("onupdate", this.onupdate.bind(this));
     }
 
-    update (dt) {
+    onupdate (dt) {
         if(this.move_dir==1)
         {
             this.node.y += this.move_speed*dt;

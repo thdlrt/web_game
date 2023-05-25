@@ -27,7 +27,13 @@ export default class NewClass extends cc.Component {
     dir:cc.Vec2 = cc.v2(1,0);
     //产生时间
     startTime:number = 0;
+    //是否已经绑定
+    isBind:boolean = false;
     onEnable () {
+        if(!this.isBind){
+            window["onfire"].on("onupdate", this.onupdate.bind(this));
+            this.isBind = true;
+        }
         //属性初始化
         this.getComponent(cc.CircleCollider).radius=18;
         this.startTime = performance.now();
@@ -74,10 +80,10 @@ export default class NewClass extends cc.Component {
         
     }
 
-    update (dt) {
+    onupdate (dt) {
         if(this.type==1||this.type==4)
         {
-            this.node.x += this.speed*dt;           
+            this.node.x += this.speed*dt;          
             if(this.node.x > this.canvas.width/2){
                 this.dismiss();
             }

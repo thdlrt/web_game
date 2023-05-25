@@ -69,13 +69,13 @@ export default class Game extends cc.Component {
     //游戏得分
     mask: number = 0;
     //第一阶段时间
-    time_1: number = 0;
+    time_1: number = 10;
     //最大等级
     maxlevel: number = 4;
     //菜单状态
     menustate: boolean = false;
     //第二阶段目标分数
-    target: number = 10;
+    target: number = 30;
     //游戏模式：0单机模式；1同屏合作；2分屏竞速
     mode: number = 0;
     //玩家信息
@@ -110,11 +110,10 @@ export default class Game extends cc.Component {
         this.canvas = cc.find('Canvas');
         //隐藏菜单
         this.menucontrol();
-        if(window["mode"] == 0){
+        if (window["mode"] == 0) {
             this.initgame();
         }
-        else
-        {
+        else {
             //延迟开始游戏
             window["onfire"].on("onstart", this.initgame.bind(this));
             //添加等待动画
@@ -122,20 +121,20 @@ export default class Game extends cc.Component {
         }
     }
     //游戏初始化
-    initgame(){
+    initgame() {
         //事件绑定
-        window["onfire"].on("pause", this.onmenu.bind(this,true)); 
-        window["onfire"].on("resume", this.onmenu.bind(this,false));
+        window["onfire"].on("pause", this.onmenu.bind(this));
+        window["onfire"].on("onupdate", this.onupdate.bind(this));
         //开启碰撞检测
         let manager = cc.director.getCollisionManager();
         manager.enabled = true;
         //元素生成
-        this.schedule(this.onCreating, 2, cc.macro.REPEAT_FOREVER, 0.75);
+        this.schedule(this.onCreating, 0.5, cc.macro.REPEAT_FOREVER, 0.75);
         //游戏模式
         this.mode = window["mode"];
         console.log("游戏模式：" + this.mode);
         //玩家初始化
-        this.players.push(new player(0,999, 5, 0.3, 1, 1, cc.instantiate(cc.find('Canvas/earth'))));
+        this.players.push(new player(0, 999, 5, 0.3, 1, 1, cc.instantiate(cc.find('Canvas/earth'))));
         this.players[0].player.getComponent('earth').id = 0;
         this.players[0].player.parent = cc.find('Canvas');
         switch (this.mode) {
@@ -143,7 +142,7 @@ export default class Game extends cc.Component {
                 break;
             case 1:
                 console.log("同屏合作模式！");
-                this.players.push(new player(0,999, 5, 0.3, 1, 1, cc.instantiate(cc.find('Canvas/earth'))));
+                this.players.push(new player(0, 999, 5, 0.3, 1, 1, cc.instantiate(cc.find('Canvas/earth'))));
                 this.players[1].player.getComponent('earth').id = 1;
                 this.players[1].player.parent = cc.find('Canvas');
                 this.players[1].player.children[0].active = false;
@@ -159,7 +158,7 @@ export default class Game extends cc.Component {
         this.inform_close();
         //开始计时
         this.time_begin = Date.now();
-        this.startGame_1 ();
+        this.startGame_1();
     }
     //信息板控制
     inform_open(str: string) {
@@ -197,7 +196,7 @@ export default class Game extends cc.Component {
         let heart = score.children[2];
         heart.getComponent(cc.Label).string = this.players[0].heart + '';
     }
-    update(dt) {
+    onupdate(dt) {
         this.update_ui();
         //是否还有玩家没有死亡
         let alive = false;
@@ -244,7 +243,7 @@ export default class Game extends cc.Component {
                 }
             }
         }
-        if(!alive){
+        if (!alive) {
             this.gameOver();
         }
     }
@@ -252,7 +251,7 @@ export default class Game extends cc.Component {
     onMove(event) {
         let playerId = Number(event.playerId == window["playerId"]);
         let targetNode = this.players[playerId ^ 1].player;
-        let x = targetNode.x + event.code.data.x,y=targetNode.y + event.code.data.y;
+        let x = targetNode.x + event.code.data.x, y = targetNode.y + event.code.data.y;
         let earth = this.players[0].player;
         let w: number = this.canvas.width / 2 - earth.width / 2;
         let h: number = this.canvas.height / 2 - earth.height / 2;
@@ -270,7 +269,7 @@ export default class Game extends cc.Component {
         }
         targetNode.x = x;
         targetNode.y = y;
-      }
+    }
     //游戏流程操控
     startGame_1() {
         this.gameState = 1;
@@ -328,7 +327,7 @@ export default class Game extends cc.Component {
     //结束动画
     endGame_1_movie() {
         cc.tween(this.canvas).to(3, { opacity: 0 }, { easing: 'sineOut' }).call(() => { this.startGame_2_movie(); }).start();
-        for(let i=0;i<this.players.length;++i)
+        for (let i = 0; i < this.players.length; ++i)
             cc.tween(this.players[i].player).to(2, { position: cc.v3(this.canvas.width / 2 + this.players[i].player.width, this.players[i].player.y) }, { easing: 'sineOut' }).start();
     }
     //第二阶段游戏
@@ -340,9 +339,9 @@ export default class Game extends cc.Component {
         scoreboard.active = true;
         //动画
         cc.tween(this.canvas).to(2, { opacity: 255 }, { easing: 'sineOut' }).start();
-        for(let i=0;i<this.players.length;++i){
+        for (let i = 0; i < this.players.length; ++i) {
             this.players[i].player.x = -this.canvas.width / 2 - this.players[i].player.width;
-            cc.tween(this.players[i].player).to(1, { position: cc.v3(-this.canvas.width / 2 + this.players[i].player.width, this.players[i].player.y) }, { easing: 'sineOut' }).call(() => { if(i==0) this.startGame_2(); }).start();
+            cc.tween(this.players[i].player).to(1, { position: cc.v3(-this.canvas.width / 2 + this.players[i].player.width, this.players[i].player.y) }, { easing: 'sineOut' }).call(() => { if (i == 0) this.startGame_2(); }).start();
         }
     }
     startGame_2() {
@@ -373,8 +372,8 @@ export default class Game extends cc.Component {
             warnning.active = true;
             anima.play("警告");
             //地球归位
-            for(let i=0;i<this.players.length;++i)
-                cc.tween(this.players[i].player).to(5, { position: cc.v3(-this.canvas.width / 2 + this.players[i].player.width, this.players[i].player.y/2) }, { easing: 'sineOut' }).start();
+            for (let i = 0; i < this.players.length; ++i)
+                cc.tween(this.players[i].player).to(5, { position: cc.v3(-this.canvas.width / 2 + this.players[i].player.width, this.players[i].player.y / 2) }, { easing: 'sineOut' }).start();
             //bgm切换
             let bgm: cc.AudioSource = this.node.getComponent(cc.AudioSource);
             bgm.stop();
@@ -409,18 +408,18 @@ export default class Game extends cc.Component {
         cc.log("end_boss");
         //结束动画
         cc.tween(this.canvas).to(5, { opacity: 0 }, { easing: 'sineOut' }).start();
-        for(let i=0;i<this.players.length;++i)
-            cc.tween(this.players[i].player).to(4, { position: cc.v3(this.canvas.width / 2 +this.players[i].player.width, this.players[i].player.y) }, { easing: 'sineOut' }).start();
+        for (let i = 0; i < this.players.length; ++i)
+            cc.tween(this.players[i].player).to(4, { position: cc.v3(this.canvas.width / 2 + this.players[i].player.width, this.players[i].player.y) }, { easing: 'sineOut' }).start();
         this.gameOver(true);
     }
     //元素生成系统
     onCreating() {
         if (this.gameState == 0) return;
-        //10个位置，每个位置都可能生成两种单位
+        //10个位置，每个位置都可能生成单位
         for (let i: number = 0; i < 10; i++) {
 
             //1/3生成一个单位
-            let generate = Math.floor(window["random"].seededRandom() * 3);
+            let generate = Math.floor(window["random"].seededRandom() * 10);
             if (generate != 0) continue;
             let generatenode: cc.Node = this.createFactor();
             let script = generatenode.getComponent("factor");
@@ -524,42 +523,42 @@ export default class Game extends cc.Component {
         menu.active = this.menustate;
         let label = cc.find("Canvas/ui/menubutton/Background/Label");
         if (this.menustate) {
-            cc.director.pause();
             //暂存时间
             this.time_sum = Date.now() - this.time_begin;
             label.getComponent(cc.Label).string = "继续";
-            if(this.mode!=0)
-                this.netScript.sendEvent("pause");
         }
         else {
-            cc.director.resume();
             //重新计时
             this.time_begin = Date.now();
             label.getComponent(cc.Label).string = "暂停";
-            if(this.mode!=0)
-                this.netScript.sendEvent("resume");
         }
         this.menustate = !this.menustate;
     }
     //菜单联动
-    onmenu(state:boolean) {
-        console.log(state);
-        if(state==this.menustate)
-        {
-            if(this.menustate)
-            {
-                //暂存时间
-                this.time_sum = Date.now() - this.time_begin;
-                this.inform_open("另一位玩家暂停了游戏");
-                this.menustate=false;
-            }
-            else{
-                //重新计时
-                this.time_begin = Date.now();
-                this.inform_close();
-                this.menustate=true;
-            }
+    onmenu(event) {
+        if (event.playerId == window["playerId"]) {
+            this.menucontrol();
         }
+        else if (this.menustate) {
+            //暂存时间
+            this.time_sum = Date.now() - this.time_begin;
+            this.inform_open("另一位玩家暂停了游戏");
+            this.menustate = false;
+        }
+        else {
+            //重新计时
+            this.time_begin = Date.now();
+            this.inform_close();
+            this.menustate = true;
+        }
+        if(this.menustate)
+            cc.director.resume()
+        else
+            cc.director.pause()
+    }
+    //暂停按钮
+    onpause() {
+        this.netScript.sendEvent("pause");
     }
     exit() {
         cc.game.end();
@@ -628,7 +627,7 @@ export default class Game extends cc.Component {
                 break;
         }
     }
-    playerMove(dt:number) {
+    playerMove(dt: number) {
         let earth = this.players[0].player;
         let x = earth.x, y = earth.y;
         let w: number = this.canvas.width / 2 - earth.width / 2;
@@ -645,12 +644,12 @@ export default class Game extends cc.Component {
         if (this.isDown) {
             y -= this.movespeed * dt;
         }
-        if(this.mode!=0){
-            if(x!=earth.x||y!=earth.y){
-                this.netScript.sendEvent("move", {x:x-earth.x,y:y-earth.y});
+        if (this.mode != 0) {
+            if (x != earth.x || y != earth.y) {
+                this.netScript.sendEvent("move", { x: x - earth.x, y: y - earth.y });
             }
         }
-        else{
+        else {
             if (x <= -w) {
                 x = -w;
             }
