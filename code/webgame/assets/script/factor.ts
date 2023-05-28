@@ -32,6 +32,22 @@ export default class factor extends cc.Component {
     //初始化
     onEnable(){
         this.unscheduleAllCallbacks();
+        this.node.scale = 1;
+        //大小初始化
+        switch(this.getComponent(cc.CircleCollider).tag){
+            case 1:
+                this.node.width = 39;
+                this.node.height = 66;
+                break;
+            case 2:
+                this.node.width = 70;
+                this.node.height = 70;
+                break;
+            case 3:
+                this.node.width = 95;
+                this.node.height = 60;
+                break;
+        }
         //开启碰撞检测
         this.getComponent(cc.CircleCollider).enabled = true;
         this.node.opacity = 255;
@@ -80,7 +96,10 @@ export default class factor extends cc.Component {
             console.log(this.node.getComponent(cc.CircleCollider).tag)
             if(this.node.getComponent(cc.CircleCollider).tag != 1){
                 this.speed = 0;
-                this.node.getComponent(cc.Animation).play("bomb")
+                if(this.getComponent(cc.CircleCollider).tag == 2)
+                    this.node.getComponent(cc.Animation).play("bomb2")
+                else
+                    this.node.getComponent(cc.Animation).play("bomb3")
                 if(Game.inst.gameState > 1){
                     console.log("createitem")
                     this.createitem();

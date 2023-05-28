@@ -1,0 +1,36 @@
+{
+  "ver": "2.3.5",
+  "uuid": "ec33785e-9b57-49cd-85cf-75f7197b7851",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 96,
+  "height": 96,
+  "platformSettings": {},
+  "subMetas": {
+    "Asteroid-01---Explode_07": {
+      "ver": "1.0.4",
+      "uuid": "a30f3668-e82d-41ac-8657-2d2c35536561",
+      "rawTextureUuid": "ec33785e-9b57-49cd-85cf-75f7197b7851",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": -1.5,
+      "trimX": 2,
+      "trimY": 3,
+      "width": 92,
+      "height": 93,
+      "rawWidth": 96,
+      "rawHeight": 96,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

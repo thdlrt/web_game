@@ -30,9 +30,23 @@ export default class NewClass extends cc.Component {
     attack: number = 1;
     //effect
     lightning: cc.Node = null;
-    fps: number = 30;
+    fps: number;
     num:number = 0;
+    //贴图
+    boss2: cc.SpriteFrame = null;
+    boss3: cc.SpriteFrame = null;
     onEnable() {
+        //加载贴图
+        cc.resources.load("picture/boss_2", cc.SpriteFrame, (err, spriteFrame) => {
+            this.boss2 = <cc.SpriteFrame>spriteFrame;
+        });
+        cc.resources.load("picture/boss_3", cc.SpriteFrame, (err, spriteFrame) => {
+            this.boss3 = <cc.SpriteFrame>spriteFrame;
+        });
+        if(window['mode']==0)
+            this.fps = 60;
+        else
+            this.fps = 30;
         //初始化
         this.canvas = cc.find('Canvas');
         this.move_dir = 0;
@@ -151,11 +165,31 @@ export default class NewClass extends cc.Component {
             if (this.heart <= this.heart_s * 0.8 && this.stage == 1) {
                 process.color = cc.Color.YELLOW;
                 this.stage = 2;
+                let effect = cc.find("effect");
+                for (let i = 0; i < 8; i++) {
+                    let temp = cc.instantiate(cc.find("effect/bomb"));
+                    temp.parent = effect;
+                    temp.x = window["random"].seededRandom() * this.node.width - this.node.width / 2 + this.node.x;
+                    temp.y = window["random"].seededRandom() * this.node.height - this.node.height / 2 + this.node.y;
+                    temp.active = true;
+                    temp.getComponent(cc.Animation).play('bomb');
+                }
+                this.node.getComponent(cc.Sprite).spriteFrame = this.boss2;
                 this.startattack();
             }
             else if (this.heart <= this.heart_s * 0.4 && this.stage == 2) {
                 process.color = cc.Color.RED;
                 this.stage = 3;
+                let effect = cc.find("effect");
+                for (let i = 0; i < 8; i++) {
+                    let temp = cc.instantiate(cc.find("effect/bomb"));
+                    temp.parent = effect;
+                    temp.x = window["random"].seededRandom() * this.node.width - this.node.width / 2 + this.node.x;
+                    temp.y = window["random"].seededRandom() * this.node.height - this.node.height / 2 + this.node.y;
+                    temp.active = true;
+                    temp.getComponent(cc.Animation).play('bomb');
+                }
+                this.node.getComponent(cc.Sprite).spriteFrame = this.boss3;
                 this.startattack();
             }
         }
@@ -168,7 +202,7 @@ export default class NewClass extends cc.Component {
         let game = cc.find("gamecontrol");
         let game_script = game.getComponent("game");
         //加分
-        game_script.mask += 100;
+        game_script.mask += 50;
         //设置游戏状态
         game_script.gameState = 4;
         this.node.active = false;
@@ -226,9 +260,13 @@ export default class NewClass extends cc.Component {
     }
     attack2() {
         this.stage = 0;//暂停发射后冲撞
+        //开始加速旋转
+        this.schedule(() => {
+            this.node.rotation += 15;
+        }, 0.01, 150);
         this.scheduleOnce(() => {
             this.move_dir = 3;
-            this.move_time *= 0.8;//前摇缩短
+            this.move_time *= 0.75;//前摇缩短
         }, this.move_time);
     }
     //道具掉落

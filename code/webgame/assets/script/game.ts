@@ -89,7 +89,37 @@ export default class Game extends cc.Component {
     //总共时间
     time_sum: number = 0;
     end:boolean = false;
+    //音频
+    bgm2: cc.AudioClip = null;
+    bgm3: cc.AudioClip = null;
+    //资源
+    factor_sprite: cc.SpriteFrame[] = [];
+    factor_audio: cc.AudioClip[] = [];
+    earth_sprite: cc.SpriteFrame[] = [];
     onLoad() {
+        //加载
+        for(let i = 1; i <= 3; i++){
+            cc.resources.load("picture/factor_" + i, cc.SpriteFrame, (err, spriteFrame) => {
+                if (err) cc.log(err);
+                this.factor_sprite.push(<cc.SpriteFrame>spriteFrame);
+            });
+            cc.resources.load("music/factor_" + i, cc.AudioClip, (err, audioClip) => {
+                if (err) cc.log(err);
+                this.factor_audio.push(<cc.AudioClip>audioClip);
+            });
+        }
+        for(let i = 1; i <= 4; i++){
+            cc.resources.load("picture/earth_" + i, cc.SpriteFrame, (err, audioClip) => {
+                if (err) cc.log(err);
+                this.earth_sprite.push(<cc.SpriteFrame>audioClip);
+            });
+        }
+        cc.resources.load("music/阿鲲 - 太空电梯", cc.AudioClip, (err, audioClip) => {
+            this.bgm2 = <cc.AudioClip>audioClip;
+        })
+        cc.resources.load("music/阿鲲 - 失重打斗", cc.AudioClip, (err, audioClip) => {
+            this.bgm3 = <cc.AudioClip>audioClip;
+        })
         this.netScript = cc.find('gamecontrol').getComponent('netConfig');
         //ui显示控制
         let scoreboard = cc.find("Canvas/ui/progressboard");
@@ -238,15 +268,11 @@ export default class Game extends cc.Component {
                     player.need += player.up;
                 player.need += player.up;
                 //更换贴图
+                player.player.getComponent(cc.Sprite).spriteFrame=this.earth_sprite[player.level-1];
                 //动画>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 if (player.level == 4) {
                     player.attack *= 1.5;
                     this.node.rotation = 0;
-                    let sprite = player.player.getComponent(cc.Sprite);
-                    cc.resources.load("picture/death", cc.SpriteFrame, (err, spriteFrame) => {
-                        if (err) cc.log(err);
-                        sprite.spriteFrame = <cc.SpriteFrame>spriteFrame;
-                    });
                 }
             }
         }
@@ -324,14 +350,11 @@ export default class Game extends cc.Component {
         //更换播放bgm
         let bgm: cc.AudioSource = this.node.getComponent(cc.AudioSource);
         bgm.stop();
-        cc.resources.load("music/阿鲲 - 太空电梯", cc.AudioClip, (err, audioClip) => {
-            if (err) cc.log(err);
-            this.node.getComponent(cc.AudioSource).clip = <cc.AudioClip>audioClip;
-            this.node.getComponent(cc.AudioSource).volume = 0.3;
+            this.node.getComponent(cc.AudioSource).clip = this.bgm2;
+            this.node.getComponent(cc.AudioSource).volume = 0.7;
             this.node.getComponent(cc.AudioSource).play();
             //循环播放
             this.node.getComponent(cc.AudioSource).loop = true;
-        });
         //关闭碰撞检测
         let manager = cc.director.getCollisionManager();
         manager.enabled = false;
@@ -393,14 +416,11 @@ export default class Game extends cc.Component {
             //bgm切换
             let bgm: cc.AudioSource = this.node.getComponent(cc.AudioSource);
             bgm.stop();
-            cc.resources.load("music/阿鲲 - 失重打斗", cc.AudioClip, (err, audioClip) => {
-                if (err) cc.log(err);
-                this.node.getComponent(cc.AudioSource).clip = <cc.AudioClip>audioClip;
+                this.node.getComponent(cc.AudioSource).clip = this.bgm3;
                 this.node.getComponent(cc.AudioSource).volume = 0.8;
                 this.node.getComponent(cc.AudioSource).play();
                 //循环播放
                 this.node.getComponent(cc.AudioSource).loop = true;
-            });
             this.scheduleOnce(() => {
                 //关闭警告动画
                 anima.stop("警告");
@@ -475,14 +495,8 @@ export default class Game extends cc.Component {
             //元素种类配置
             col.tag = type;
             //tag=0 表示地球，1-9表示factor，10-19表示bullet，20-29表示item,30-39表示f_bullet
-            cc.resources.load("picture/factor_" + type, cc.SpriteFrame, (err, spriteFrame) => {
-                if (err) cc.log(err);
-                generatenode.getComponent(cc.Sprite).spriteFrame = <cc.SpriteFrame>spriteFrame;
-            });
-            cc.resources.load("music/factor_" + type, cc.AudioClip, (err, audioClip) => {
-                if (err) cc.log(err);
-                script.audio = <cc.AudioClip>audioClip;
-            });
+            generatenode.getComponent(cc.Sprite).spriteFrame = this.factor_sprite[type - 1];
+            script.audio = this.factor_audio[type - 1];
             generatenode.parent = cc.find("Canvas/factors");
             let w = this.canvas.width;
             let h = this.canvas.height;

@@ -140,10 +140,10 @@ export default class net extends cc.Component {
 
     //获取玩家id
     getplayerid() {
-        // return cc.sys.localStorage.getItem('playerId');
-        const url = new URL(window.location.href);
-        const params = new URLSearchParams(url.search);
-        return params.get('playerId');
+        return cc.sys.localStorage.getItem('playerId');
+        // const url = new URL(window.location.href);
+        // const params = new URLSearchParams(url.search);
+        // return params.get('playerId');
     }
     //获取游戏模式
     getmode() {

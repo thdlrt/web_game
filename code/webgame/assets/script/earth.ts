@@ -71,6 +71,11 @@ export default class NewClass extends cc.Component {
         //受到攻击
         case 31:
             this.game_script.players[this.id].heart -= other.node.getComponent("f_bullet").attack;
+            this.getComponent(cc.Animation).play('道具消失');
+            this.scheduleOnce(()=> {
+                this.getComponent(cc.Animation).stop('道具消失');
+                this.node.opacity = 255;
+            }, 2);
             break;
         default:
             cc.log("为未知碰撞")

@@ -126,6 +126,7 @@ export default class NewClass extends cc.Component {
             let hit = cc.instantiate(cc.find('effect/hit'));
             hit.parent = cc.find('effect');
             hit.position = this.node.position;
+            hit.x += 7;
             hit.active = true;
             //计时销毁
             setTimeout(() => {
