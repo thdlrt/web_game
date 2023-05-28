@@ -31,13 +31,13 @@ const { ccclass, property } = cc._decorator;
 export default class net extends cc.Component {
 
     //服务器ip
-    server_ip: string = '106.54.61.151';
+    server_ip: string = 'localhost';
     roomId: string = "";
     playerId: string = "";
     //游戏状态
     pause: boolean = false;
     //帧速率
-    fps: number = 60;
+    fps: number = 30;
     seed: number;
     //事件板
     informboard: cc.Node = null;
@@ -180,7 +180,7 @@ export default class net extends cc.Component {
     //代理地址/gameapi
     uploadGameRecord(score: number, tiemCost: number, complete: boolean) {
         let xhr = new XMLHttpRequest();
-        let url = `/gameapi:10000/uploadGameRecord`;
+        let url = `http://${this.server_ip}:10000/uploadGameRecord`;
         let params = {
             playerId: this.playerId,
             score: score,
@@ -234,6 +234,7 @@ export default class net extends cc.Component {
             this.seed = parseInt(this.roomId);
         }
         else{//帧速率控制器 (定时器每秒60帧)
+            this.fps=60;
             this.schedule(function () {
                 window["onfire"].fire("onupdate",1/this.fps);
             }, 1 / this.fps);

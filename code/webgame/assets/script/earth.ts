@@ -35,7 +35,7 @@ export default class NewClass extends cc.Component {
             break;
             //和敌机发生碰撞
         case 2:case 3:
-            this.game_script.players[this.id].heart -= 1;
+            this.game_script.players[this.id].heart -= 3;
             //闪烁动画
             this.getComponent(cc.Animation).play('道具消失');
             this.scheduleOnce(()=> {
@@ -90,7 +90,7 @@ export default class NewClass extends cc.Component {
                     break;
                 case 3:
                     this.dis++;
-                    if(this.dis%10==0)
+                    if(this.dis%12==0)
                     {
                         this.dis=0;
                         this.shootbomb(1);
@@ -99,7 +99,7 @@ export default class NewClass extends cc.Component {
                     break;
                 case 4:
                     this.dis++;
-                    if(this.dis%5==0)
+                    if(this.dis%6==0)
                     {
                         this.dis=0;
                         this.shootbomb(1);

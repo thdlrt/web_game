@@ -22,6 +22,8 @@ export default class factor extends cc.Component {
     attack:number = 1;
     //特殊状态
     state:number = 0;//0正常，1定住
+    //effect
+    lightning:cc.Node = null;
     //是否绑定事件
     isBind:boolean = false;
     private canvas : cc.Node = null;
@@ -29,6 +31,10 @@ export default class factor extends cc.Component {
     start () {}
     //初始化
     onEnable(){
+        this.unscheduleAllCallbacks();
+        //开启碰撞检测
+        this.getComponent(cc.CircleCollider).enabled = true;
+        this.node.opacity = 255;
         if(!this.isBind){
             window["onfire"].on("onupdate", this.onupdate.bind(this));
             this.isBind = true;
@@ -40,6 +46,8 @@ export default class factor extends cc.Component {
            this.speed = 300;
         }
         //特殊单位的属性
+        if(this.getComponent(cc.CircleCollider).tag==2)
+            this.speed *= 1.5;
         if(this.getComponent(cc.CircleCollider).tag==3)
         {
             //射击功能
@@ -56,24 +64,40 @@ export default class factor extends cc.Component {
         }
     }
     dismiss(){
+        this.unscheduleAllCallbacks();
         //不是超出边界就消失，则播放音效
         //关闭所有计时器
         this.unscheduleAllCallbacks();
-        if(Game.inst.gameState > 1 &&this.node.x > - this.canvas.width/2)
+        if(this.node.getComponent(cc.CircleCollider).tag == 1){
+            Game.inst.destroyFactor( this.node );
+            return;
+        }
+
+        if(this.node.x > - this.canvas.width/2)
         {
             //获得分数
             cc.find("gamecontrol").getComponent("game").mask+=this.score;
-
-            if(this.node.getComponent(cc.CircleCollider).tag != 1)
-                this.createitem();
+            console.log(this.node.getComponent(cc.CircleCollider).tag)
+            if(this.node.getComponent(cc.CircleCollider).tag != 1){
+                this.speed = 0;
+                this.node.getComponent(cc.Animation).play("bomb")
+                if(Game.inst.gameState > 1){
+                    console.log("createitem")
+                    this.createitem();
+                }
+            }
         }
-        Game.inst.destroyFactor( this.node );
+        //等待动画播放完毕
+        this.scheduleOnce(()=> {
+            Game.inst.destroyFactor( this.node );
+        },0.8);
     }
     //碰撞检测
     onCollisionEnter (other : cc.Collider, self : cc.Collider) {
         if(other.tag == 0)//和地球碰撞
         {
             cc.audioEngine.play(this.audio, false, 0.4);
+            this.getComponent(cc.CircleCollider).enabled = false;
             this.dismiss();
         }
         else if(other.tag>=10&&other.tag<20&&self.tag!=1)//和子弹碰撞
@@ -81,18 +105,25 @@ export default class factor extends cc.Component {
             //球形闪电
             if(other.tag==13)
             {
+                //瘫痪动画
+                this.lightning = cc.instantiate(cc.find('effect/lightning'));
+                this.lightning.parent = cc.find('effect');
+                this.lightning.x = this.node.x;
+                this.lightning.y = this.node.y;
+                this.lightning.active = true;
                 //定住5s,不移动、不射击
-                //瘫痪动画>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 this.state = 1;
                 this.scheduleOnce(()=> {
                     this.state=0;
+                    this.lightning = null;
                 },5);
                 return;
             }
             this.heart-=other.node.getComponent("bullet").attack;
             if(this.heart<=0)
             {
-                cc.audioEngine.play(this.audio, false, 0.4);
+                cc.audioEngine.play(this.audio, false, 0.2);
+                this.getComponent(cc.CircleCollider).enabled = false;
                 this.dismiss();
             }
         }
@@ -102,13 +133,13 @@ export default class factor extends cc.Component {
         //三种道具（回血0、导弹1、炸弹2），升级用的moss仍然随机出现，只是更少
         //1/3生成一个单位（暂时100）
         //》》》》》》》》》》》》》》》》》
-        let generate = Math.floor(window["random"].seededRandom()*3);
+        let generate = Math.floor(window["random"].seededRandom()*6);
         if(generate != 0)return;
         //基本信息初始化
         let generatenode = Game.inst.createItem();
         generatenode.parent = cc.find("Canvas/items");
         let type = Math.floor(window["random"].seededRandom()*3);
-        generatenode.zIndex = 4;
+        generatenode.zIndex = 3;
         let col = generatenode.getComponent(cc.CircleCollider);
 
         if(type==0)

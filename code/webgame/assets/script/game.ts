@@ -69,13 +69,13 @@ export default class Game extends cc.Component {
     //游戏得分
     mask: number = 0;
     //第一阶段时间
-    time_1: number = 10;
+    time_1: number = 12;
     //最大等级
     maxlevel: number = 4;
     //菜单状态
     menustate: boolean = false;
     //第二阶段目标分数
-    target: number = 30;
+    target: number = 60;
     //游戏模式：0单机模式；1同屏合作；2分屏竞速
     mode: number = 0;
     //玩家信息
@@ -88,6 +88,7 @@ export default class Game extends cc.Component {
     time_begin: number;
     //总共时间
     time_sum: number = 0;
+    end:boolean = false;
     onLoad() {
         this.netScript = cc.find('gamecontrol').getComponent('netConfig');
         //ui显示控制
@@ -104,10 +105,15 @@ export default class Game extends cc.Component {
         //显示层级控制（背景0，元素1-9，ui10）
         cc.find('Canvas/ui').zIndex = 10;
         cc.find('Canvas/background').zIndex = 0;
-        cc.find('Canvas/earth').zIndex = 5;
+        cc.find('Canvas/earth').zIndex = 7;
         cc.find('Canvas/warnning').zIndex = 9;
+        cc.find('effect').zIndex = 15;
         Game.inst = this;
         this.canvas = cc.find('Canvas');
+        //隐藏特效
+        cc.find('effect/lightning').active = false;
+        cc.find('effect/hit').active = false;
+        cc.find('effect/bomb').active = false
         //隐藏菜单
         this.menucontrol();
         if (window["mode"] == 0) {
@@ -129,12 +135,12 @@ export default class Game extends cc.Component {
         let manager = cc.director.getCollisionManager();
         manager.enabled = true;
         //元素生成
-        this.schedule(this.onCreating, 0.5, cc.macro.REPEAT_FOREVER, 0.75);
+        this.schedule(this.onCreating, 0.75, cc.macro.REPEAT_FOREVER, 0.75);
         //游戏模式
         this.mode = window["mode"];
         console.log("游戏模式：" + this.mode);
         //玩家初始化
-        this.players.push(new player(0, 999, 5, 0.3, 1, 1, cc.instantiate(cc.find('Canvas/earth'))));
+        this.players.push(new player(0, 100, 4, 0.3, 1, 2, cc.instantiate(cc.find('Canvas/earth'))));
         this.players[0].player.getComponent('earth').id = 0;
         this.players[0].player.parent = cc.find('Canvas');
         switch (this.mode) {
@@ -142,7 +148,7 @@ export default class Game extends cc.Component {
                 break;
             case 1:
                 console.log("同屏合作模式！");
-                this.players.push(new player(0, 999, 5, 0.3, 1, 1, cc.instantiate(cc.find('Canvas/earth'))));
+                this.players.push(new player(0, 100, 4, 0.3, 1, 2, cc.instantiate(cc.find('Canvas/earth'))));
                 this.players[1].player.getComponent('earth').id = 1;
                 this.players[1].player.parent = cc.find('Canvas');
                 this.players[1].player.children[0].active = false;
@@ -207,6 +213,7 @@ export default class Game extends cc.Component {
         }
         //结束boss战
         if (this.gameState == 4) {
+            this.end=true;
             this.gameState = 0;//帮助关闭射击系统等
             this.end_boss();
         }
@@ -233,7 +240,7 @@ export default class Game extends cc.Component {
                 //更换贴图
                 //动画>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 if (player.level == 4) {
-                    player.attack *= 2;
+                    player.attack *= 1.5;
                     this.node.rotation = 0;
                     let sprite = player.player.getComponent(cc.Sprite);
                     cc.resources.load("picture/death", cc.SpriteFrame, (err, spriteFrame) => {
@@ -243,7 +250,8 @@ export default class Game extends cc.Component {
                 }
             }
         }
-        if (!alive) {
+        if (!alive&&!this.end) {
+            this.end=true;
             this.gameOver();
         }
     }
@@ -287,8 +295,12 @@ export default class Game extends cc.Component {
             }
         }, 1, this.time_1);
     }
-    //游戏失败
+    //游戏结束
     gameOver(complete: boolean = false) {
+        //关闭定时器
+        this.unscheduleAllCallbacks();
+        window["onfire"].off("pause");
+        window["onfire"].off("onupdate");
         this.gameState = 0;
         cc.log("gameOver");
         //停止播放bgm
@@ -300,7 +312,11 @@ export default class Game extends cc.Component {
         //切换选择场景
         cc.director.loadScene('gameover');
         //上传分数
-        //this.netScript.uploadGameRecord(this.mask, this.time_sum, complete);
+        this.netScript.uploadGameRecord(this.mask, this.time_sum, complete);
+        window["mask"] = this.mask;
+        this.time_sum += Date.now() - this.time_begin;
+        window["time_sum"] = this.time_sum;
+        window["complete"] = complete;
     }
     endGame_1() {
         this.gameState = 0;
@@ -380,7 +396,7 @@ export default class Game extends cc.Component {
             cc.resources.load("music/阿鲲 - 失重打斗", cc.AudioClip, (err, audioClip) => {
                 if (err) cc.log(err);
                 this.node.getComponent(cc.AudioSource).clip = <cc.AudioClip>audioClip;
-                this.node.getComponent(cc.AudioSource).volume = 0.3;
+                this.node.getComponent(cc.AudioSource).volume = 0.8;
                 this.node.getComponent(cc.AudioSource).play();
                 //循环播放
                 this.node.getComponent(cc.AudioSource).loop = true;
@@ -410,7 +426,9 @@ export default class Game extends cc.Component {
         cc.tween(this.canvas).to(5, { opacity: 0 }, { easing: 'sineOut' }).start();
         for (let i = 0; i < this.players.length; ++i)
             cc.tween(this.players[i].player).to(4, { position: cc.v3(this.canvas.width / 2 + this.players[i].player.width, this.players[i].player.y) }, { easing: 'sineOut' }).start();
-        this.gameOver(true);
+        this.scheduleOnce(() => {    
+            this.gameOver(true);
+        }, 6);
     }
     //元素生成系统
     onCreating() {
@@ -418,15 +436,15 @@ export default class Game extends cc.Component {
         //10个位置，每个位置都可能生成单位
         for (let i: number = 0; i < 10; i++) {
 
-            //1/3生成一个单位
-            let generate = Math.floor(window["random"].seededRandom() * 10);
+            //1/10生成一个单位
+            let generate = Math.floor(window["random"].seededRandom() * 8);
             if (generate != 0) continue;
             let generatenode: cc.Node = this.createFactor();
             let script = generatenode.getComponent("factor");
             //1/4生成零件
-            let num = 4;
+            let num = 6;
             if (this.gameState == 2)
-                num = 5;//总可能数目
+                num = 8;//总可能数目
             let type = Math.floor(window["random"].seededRandom() * num);
             //type根据概率不同映射到1-9上表示不同的单位
             switch (type) {
@@ -435,14 +453,14 @@ export default class Game extends cc.Component {
                     script.speed = 200;
                     script.score = 5;
                     break;
-                case 1: case 2: case 3:
+                case 1: case 2: case 3: case 4: case 5:
                     type = 2;
                     script.speed = 200;
                     script.attack = 1;
                     script.heart = 20;
                     script.score = 2;
                     break;
-                case 4:
+                case 6: case 7:
                     type = 3;
                     script.speed = 150;
                     script.attack = 1;
@@ -484,7 +502,8 @@ export default class Game extends cc.Component {
         return node;
     }
     destroyFactor(node: cc.Node) {
-        this.factorPool.put(node);
+        if(!this.end)
+            this.factorPool.put(node);
     }
     //item对象池
     createItem() {
@@ -494,7 +513,8 @@ export default class Game extends cc.Component {
         return node;
     }
     destroyItem(node: cc.Node) {
-        this.itemPool.put(node);
+        if(!this.end)
+            this.itemPool.put(node);
     }
     //button对象池
     createBullet() {
@@ -504,7 +524,8 @@ export default class Game extends cc.Component {
         return node;
     }
     destroyBullet(node: cc.Node) {
-        this.bulletPool.put(node);
+        if(!this.end)
+            this.bulletPool.put(node);
     }
     //f_button对象池
     createf_Bullet() {
@@ -514,7 +535,8 @@ export default class Game extends cc.Component {
         return node;
     }
     destroyf_Bullet(node: cc.Node) {
-        this.f_bulletPool.put(node);
+        if(!this.end)
+            this.f_bulletPool.put(node);
     }
     //按钮响应
     //菜单
@@ -524,13 +546,17 @@ export default class Game extends cc.Component {
         let label = cc.find("Canvas/ui/menubutton/Background/Label");
         if (this.menustate) {
             //暂存时间
-            this.time_sum = Date.now() - this.time_begin;
+            this.time_sum += Date.now() - this.time_begin;
             label.getComponent(cc.Label).string = "继续";
+            if(window['mode']==0)
+                cc.director.pause()
         }
         else {
             //重新计时
             this.time_begin = Date.now();
             label.getComponent(cc.Label).string = "暂停";
+            if(window['mode']==0)
+                cc.director.resume()
         }
         this.menustate = !this.menustate;
     }
@@ -541,7 +567,7 @@ export default class Game extends cc.Component {
         }
         else if (this.menustate) {
             //暂存时间
-            this.time_sum = Date.now() - this.time_begin;
+            this.time_sum += Date.now() - this.time_begin;
             this.inform_open("另一位玩家暂停了游戏");
             this.menustate = false;
         }
@@ -558,7 +584,10 @@ export default class Game extends cc.Component {
     }
     //暂停按钮
     onpause() {
-        this.netScript.sendEvent("pause");
+        if(window["mode"]==1)
+            this.netScript.sendEvent("pause");
+        else
+            this.menucontrol();
     }
     exit() {
         cc.game.end();
