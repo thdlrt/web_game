@@ -33,6 +33,9 @@ export default class NewClass extends cc.Component {
         cc.find("Canvas/board/playerId").getComponent(cc.Label).string = String(window["playerId"]);
     }
     exit(){
-
+        if(window['mode']==0)
+            window.location.href = `http://106.54.61.151/front/game_mode.html`
+        else
+            window.location.href = `http://106.54.61.151/front/match.html?roomId=${this.roomId}`
     }
 }

@@ -96,6 +96,9 @@ export default class Game extends cc.Component {
     factor_sprite: cc.SpriteFrame[] = [];
     factor_audio: cc.AudioClip[] = [];
     earth_sprite: cc.SpriteFrame[] = [];
+    //过场动画
+    movie1:boolean = false;
+    movie2:boolean = false;
     onLoad() {
         //加载
         for(let i = 1; i <= 3; i++){
@@ -280,6 +283,21 @@ export default class Game extends cc.Component {
             this.end=true;
             this.gameOver();
         }
+        //过场动画
+        if (this.movie1) {
+            this.canvas.opacity -= 3;
+            if (this.canvas.opacity <= 0) {
+                this.movie1 = false;
+                this.startGame_2_movie();
+            }
+        }
+        if (this.movie2) {
+            this.canvas.opacity += 3;
+            if (this.canvas.opacity >= 255) {
+                this.movie2 = false;
+                this.startGame_2();
+            }
+        }
     }
     //移动系统(仅多人模式时启用)
     onMove(event) {
@@ -365,7 +383,10 @@ export default class Game extends cc.Component {
     }
     //结束动画
     endGame_1_movie() {
-        cc.tween(this.canvas).to(3, { opacity: 0 }, { easing: 'sineOut' }).call(() => { this.startGame_2_movie(); }).start();
+        if(window['mode']==1)
+            this.movie1 = true;
+        else
+            cc.tween(this.canvas).to(3, { opacity: 0 }, { easing: 'sineOut' }).call(() => { this.startGame_2_movie(); }).start();
         for (let i = 0; i < this.players.length; ++i)
             cc.tween(this.players[i].player).to(2, { position: cc.v3(this.canvas.width / 2 + this.players[i].player.width, this.players[i].player.y) }, { easing: 'sineOut' }).start();
     }
@@ -377,10 +398,13 @@ export default class Game extends cc.Component {
         let scoreboard = cc.find("Canvas/ui/progressboard");
         scoreboard.active = true;
         //动画
-        cc.tween(this.canvas).to(2, { opacity: 255 }, { easing: 'sineOut' }).start();
+        if(window['mode']==1)
+            this.movie2 = true;
+        else
+            cc.tween(this.canvas).to(2, { opacity: 255 }, { easing: 'sineOut' }).call(() => { this.startGame_2(); }).start();
         for (let i = 0; i < this.players.length; ++i) {
             this.players[i].player.x = -this.canvas.width / 2 - this.players[i].player.width;
-            cc.tween(this.players[i].player).to(1, { position: cc.v3(-this.canvas.width / 2 + this.players[i].player.width, this.players[i].player.y) }, { easing: 'sineOut' }).call(() => { if (i == 0) this.startGame_2(); }).start();
+            cc.tween(this.players[i].player).to(1, { position: cc.v3(-this.canvas.width / 2 + this.players[i].player.width, this.players[i].player.y) }, { easing: 'sineOut' }).start();
         }
     }
     startGame_2() {
@@ -602,9 +626,6 @@ export default class Game extends cc.Component {
             this.netScript.sendEvent("pause");
         else
             this.menucontrol();
-    }
-    exit() {
-        cc.game.end();
     }
     clearscreen() {
         //不知道为什么两次才能全删除

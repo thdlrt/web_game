@@ -31,7 +31,7 @@ const { ccclass, property } = cc._decorator;
 export default class net extends cc.Component {
 
     //服务器ip
-    server_ip: string = 'localhost';
+    server_ip: string = '106.54.61.151';
     roomId: string = "";
     playerId: string = "";
     //游戏状态
@@ -140,7 +140,8 @@ export default class net extends cc.Component {
 
     //获取玩家id
     getplayerid() {
-        return cc.sys.localStorage.getItem('playerId');
+        let res = cc.sys.localStorage.getItem('playerId');
+        return res;
         // const url = new URL(window.location.href);
         // const params = new URLSearchParams(url.search);
         // return params.get('playerId');
@@ -182,12 +183,13 @@ export default class net extends cc.Component {
         let xhr = new XMLHttpRequest();
         let url = `http://${this.server_ip}:10000/uploadGameRecord`;
         let params = {
-            playerId: this.playerId,
+            playerId: window['playerId'],
             score: score,
             timeCost: tiemCost,
             complete: complete,
         }; // 参数对象
         xhr.open('POST', url, true);
+        xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8");
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 var responseJson = JSON.parse(xhr.responseText);
@@ -213,6 +215,10 @@ export default class net extends cc.Component {
     inform_close() {
         this.informboard.active = false;
     }
+    //页面重定向
+    jmp_gameover() {
+        window.location.href = `http://${this.server_ip}/front/game_mode.html`
+    }
     onLoad() {
         this.informboard = cc.find("Canvas/informboard");
         //全局使用事件监听
@@ -223,6 +229,7 @@ export default class net extends cc.Component {
         window["mode"] = parseInt(this.getmode());
         this.seed = parseInt(this.generateSeed(), 10);
         window["onfire"].on("pause", () => {this.pause = !this.pause;});
+        console.log("房间号：" + this.roomId, "玩家号：" + this.playerId, "模式：" + window["mode"]);
         //多人模式服服务器连接
         if (window["mode"] != 0) {
             //启动服务器监听，绑定

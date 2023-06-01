@@ -201,7 +201,7 @@
       "array": [
         0,
         0,
-        388.6927594049862,
+        384.95431779370836,
         0,
         0,
         0,
@@ -1994,8 +1994,8 @@
       "__id__": 41
     },
     "component": "",
-    "_componentId": "85419buy4ZOa77KmXmttnz4",
-    "handler": "exit",
+    "_componentId": "342cfCifu5FB4ptu+5B8XPx",
+    "handler": "jmp_gameover",
     "customEventData": ""
   },
   {
